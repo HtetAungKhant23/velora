@@ -20,6 +20,22 @@ type User struct {
 	updatedAt time.Time
 }
 
+func (u *User) ID() UserID {
+	return u.id
+}
+
+func (u *User) Email() Email {
+	return u.email
+}
+
+func (u *User) CreatedAt() time.Time {
+	return u.createdAt
+}
+
+func (u *User) UpdatedAt() time.Time {
+	return u.updatedAt
+}
+
 func NewUser(rawEmail, plainPassword string) (*User, error) {
 	email, err := NewEmail(rawEmail)
 	if err != nil {
