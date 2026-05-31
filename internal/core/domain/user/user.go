@@ -28,6 +28,10 @@ func (u *User) Email() Email {
 	return u.email
 }
 
+func (u *User) PasswordHash() []byte {
+	return u.password.hash
+}
+
 func (u *User) CreatedAt() time.Time {
 	return u.createdAt
 }
