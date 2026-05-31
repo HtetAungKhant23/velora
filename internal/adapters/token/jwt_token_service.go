@@ -42,7 +42,7 @@ func (s *JWTTokenService) Generate(userID, email string) (string, error) {
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signed, err := token.SignedString(s.secret)
 	if err != nil {
 		return "", fmt.Errorf("jwt sign: %w", err)

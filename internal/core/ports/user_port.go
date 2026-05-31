@@ -12,7 +12,7 @@ type RegisterCommand struct {
 }
 
 type AuthResult struct {
-	Token string
+	Token string `json:"token"`
 }
 
 type UserUseCase interface {
