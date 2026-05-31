@@ -4,20 +4,25 @@ import (
 	"github.com/go-chi/chi"
 )
 
-func NewRouter() *chi.Mux {
+type RouterDeps struct {
+	AuthHandler *AuthHandler
+}
+
+func NewRouter(deps RouterDeps) *chi.Mux {
 	r := chi.NewRouter()
 
-	r.Mount("/api", getApiRouter())
+	r.Mount("/api", getApiRouter(deps))
 
 	return r
 }
 
-func getApiRouter() *chi.Mux {
+func getApiRouter(deps RouterDeps) *chi.Mux {
 	api := chi.NewRouter()
 
 	v1 := chi.NewRouter()
 
 	registerHealthCheckRoute(v1)
+	registerAuthRoute(v1, deps.AuthHandler)
 
 	api.Mount("/v1", v1)
 
@@ -26,4 +31,8 @@ func getApiRouter() *chi.Mux {
 
 func registerHealthCheckRoute(r *chi.Mux) {
 	r.Get("/health", healthCheckHandler)
+}
+
+func registerAuthRoute(r *chi.Mux, h *AuthHandler) {
+	r.Post("/register", h.Register)
 }
