@@ -69,3 +69,18 @@ func (u *User) VerifyPassword(plainText string) error {
 	}
 	return nil
 }
+
+func ReconstitueUser(
+	id UserID,
+	email Email,
+	passwordHash []byte,
+	createdAt, updatedAt time.Time,
+) *User {
+	return &User{
+		id:        id,
+		email:     email,
+		password:  ReconstitueHashedPassword(passwordHash),
+		createdAt: createdAt,
+		updatedAt: updatedAt,
+	}
+}

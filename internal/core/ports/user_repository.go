@@ -10,5 +10,6 @@ import (
 
 type UserRepository interface {
 	ExistsByEmail(ctx context.Context, email user.Email) (bool, error)
+	FindByEmail(ctx context.Context, email user.Email) (*user.User, error)
 	Save(ctx context.Context, user *user.User) error
 }

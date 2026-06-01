@@ -37,3 +37,7 @@ func (p HashedPassword) Verify(plainText string) error {
 
 	return nil
 }
+
+func ReconstitueHashedPassword(hash []byte) HashedPassword {
+	return HashedPassword{hash: hash}
+}
