@@ -4,6 +4,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/HtetAungKhant23/velora/internal/core/domain/shared"
@@ -48,4 +49,32 @@ func (s *UserService) Register(ctx context.Context, cmd ports.RegisterCommand) e
 	}
 
 	return nil
+}
+
+func (s *UserService) Login(ctx context.Context, cmd ports.LoginCommand) (ports.AuthResult, error) {
+	email, err := user.NewEmail(cmd.Email)
+	if err != nil {
+		return ports.AuthResult{}, shared.ErrUnauthorized
+	}
+
+	user, err := s.users.FindByEmail(ctx, email)
+	if err != nil {
+		if errors.Is(err, shared.ErrNotFound) {
+			return ports.AuthResult{}, shared.ErrUnauthorized
+		}
+		return ports.AuthResult{}, fmt.Errorf("login: %w", err)
+	}
+
+	if err = user.VerifyPassword(cmd.Password); err != nil {
+		return ports.AuthResult{}, shared.ErrUnauthorized
+	}
+
+	token, err := s.tokens.Generate(string(user.ID()), user.Email().String())
+	if err != nil {
+		return ports.AuthResult{}, fmt.Errorf("login: token: %w", err)
+	}
+
+	return ports.AuthResult{
+		Token: token,
+	}, nil
 }

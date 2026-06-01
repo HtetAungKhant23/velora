@@ -35,4 +35,5 @@ func registerHealthCheckRoute(r *chi.Mux) {
 
 func registerAuthRoute(r *chi.Mux, h *AuthHandler) {
 	r.Post("/register", h.Register)
+	r.Post("/login", h.Login)
 }

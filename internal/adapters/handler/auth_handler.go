@@ -22,6 +22,11 @@ type RegisterPayload struct {
 	Password string `json:"password"`
 }
 
+type LoginPayload struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	payload := &RegisterPayload{}
 
@@ -50,4 +55,34 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	middleware.WriteCreated(w, middleware.SuccessResponse)
+}
+
+func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
+	payload := &LoginPayload{}
+
+	if err := middleware.ReadJSON(r, payload); err != nil {
+		middleware.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	if payload.Email == "" {
+		middleware.WriteError(w, http.StatusBadRequest, "email is required")
+		return
+	}
+
+	if payload.Password == "" {
+		middleware.WriteError(w, http.StatusBadRequest, "password is required")
+		return
+	}
+
+	result, err := h.useCase.Login(r.Context(), ports.LoginCommand{
+		Email:    payload.Email,
+		Password: payload.Password,
+	})
+	if err != nil {
+		middleware.MapDomainError(w, err)
+		return
+	}
+
+	middleware.WriteOK(w, result)
 }
