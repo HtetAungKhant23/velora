@@ -34,6 +34,8 @@ func registerHealthCheckRoute(r *chi.Mux) {
 }
 
 func registerAuthRoute(r *chi.Mux, h *AuthHandler) {
-	r.Post("/register", h.Register)
-	r.Post("/login", h.Login)
+	r.Route("/auth", func(r chi.Router) {
+		r.Post("/register", h.Register)
+		r.Post("/login", h.Login)
+	})
 }

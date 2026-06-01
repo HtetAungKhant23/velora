@@ -59,7 +59,6 @@ func WriteError(w http.ResponseWriter, status int, message string) {
 }
 
 func MapDomainError(w http.ResponseWriter, err error) {
-	fmt.Println(err)
 	switch {
 	case errors.Is(err, shared.ErrNotFound):
 		WriteJSON(w, http.StatusNotFound, ErrResp("resource not found"))
