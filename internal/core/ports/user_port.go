@@ -16,5 +16,5 @@ type AuthResult struct {
 }
 
 type UserUseCase interface {
-	Register(ctx context.Context, cmd RegisterCommand) (AuthResult, error)
+	Register(ctx context.Context, cmd RegisterCommand) error
 }

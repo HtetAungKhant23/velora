@@ -18,6 +18,14 @@ type envelope struct {
 	Data any `json:"data"`
 }
 
+var (
+	SuccessResponse = struct {
+		Success bool `json:"success"`
+	}{
+		Success: true,
+	}
+)
+
 func ErrResp(msg string) ErrResponse {
 	return ErrResponse{Error: msg}
 }

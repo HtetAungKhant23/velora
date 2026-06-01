@@ -23,36 +23,29 @@ func NewUserService(users ports.UserRepository, tokens ports.TokenService) *User
 	}
 }
 
-func (s *UserService) Register(ctx context.Context, cmd ports.RegisterCommand) (ports.AuthResult, error) {
+func (s *UserService) Register(ctx context.Context, cmd ports.RegisterCommand) error {
 	email, err := user.NewEmail(cmd.Email)
 	if err != nil {
-		return ports.AuthResult{}, fmt.Errorf("register: %w", err)
+		return fmt.Errorf("register: %w", err)
 	}
 
 	exist, err := s.users.ExistsByEmail(ctx, email)
 	if err != nil {
-		return ports.AuthResult{}, fmt.Errorf("register: check email: %w", err)
+		return fmt.Errorf("register: check email: %w", err)
 	}
 
 	if exist {
-		return ports.AuthResult{}, fmt.Errorf("register: %w", shared.ErrAlreadyExist)
+		return fmt.Errorf("register: %w", shared.ErrAlreadyExist)
 	}
 
 	user, err := user.NewUser(cmd.Email, cmd.Password)
 	if err != nil {
-		return ports.AuthResult{}, fmt.Errorf("register: %w", err)
+		return fmt.Errorf("register: %w", err)
 	}
 
 	if err = s.users.Save(ctx, user); err != nil {
-		return ports.AuthResult{}, fmt.Errorf("register: save: %w", err)
+		return fmt.Errorf("register: save: %w", err)
 	}
 
-	token, err := s.tokens.Generate(string(user.ID()), user.Email().String())
-	if err != nil {
-		return ports.AuthResult{}, fmt.Errorf("register: generate token: %w", err)
-	}
-
-	return ports.AuthResult{
-		Token: token,
-	}, nil
+	return nil
 }

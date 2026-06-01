@@ -30,7 +30,17 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.useCase.Register(r.Context(), ports.RegisterCommand{
+	if payload.Email == "" {
+		middleware.WriteError(w, http.StatusBadRequest, "email is required")
+		return
+	}
+
+	if payload.Password == "" {
+		middleware.WriteError(w, http.StatusBadRequest, "password is required")
+		return
+	}
+
+	err := h.useCase.Register(r.Context(), ports.RegisterCommand{
 		Email:    payload.Email,
 		Password: payload.Password,
 	})
@@ -39,5 +49,5 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	middleware.WriteCreated(w, result)
+	middleware.WriteCreated(w, middleware.SuccessResponse)
 }
