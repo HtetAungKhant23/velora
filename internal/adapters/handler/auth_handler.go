@@ -86,3 +86,20 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	middleware.WriteOK(w, result)
 }
+
+func (h *AuthHandler) Me(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middleware.UserIDFromContext(r.Context())
+
+	if !ok {
+		middleware.WriteError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	userDTO, err := h.useCase.GetProfile(r.Context(), userID)
+	if err != nil {
+		middleware.MapDomainError(w, err)
+		return
+	}
+
+	middleware.WriteOK(w, userDTO)
+}

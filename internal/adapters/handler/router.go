@@ -1,11 +1,13 @@
 package handler
 
 import (
+	"github.com/HtetAungKhant23/velora/internal/adapters/handler/middleware"
 	"github.com/go-chi/chi"
 )
 
 type RouterDeps struct {
 	AuthHandler *AuthHandler
+	AuthGuard   *middleware.AuthGuard
 }
 
 func NewRouter(deps RouterDeps) *chi.Mux {
@@ -22,7 +24,7 @@ func getApiRouter(deps RouterDeps) *chi.Mux {
 	v1 := chi.NewRouter()
 
 	registerHealthCheckRoute(v1)
-	registerAuthRoute(v1, deps.AuthHandler)
+	registerAuthRoute(v1, deps.AuthHandler, deps.AuthGuard)
 
 	api.Mount("/v1", v1)
 
@@ -33,9 +35,15 @@ func registerHealthCheckRoute(r *chi.Mux) {
 	r.Get("/health", healthCheckHandler)
 }
 
-func registerAuthRoute(r *chi.Mux, h *AuthHandler) {
+func registerAuthRoute(r *chi.Mux, h *AuthHandler, authGuard *middleware.AuthGuard) {
 	r.Route("/auth", func(r chi.Router) {
 		r.Post("/register", h.Register)
 		r.Post("/login", h.Login)
+
+		r.Group(func(r chi.Router) {
+			r.Use(authGuard.Verify)
+
+			r.Get("/me", h.Me)
+		})
 	})
 }

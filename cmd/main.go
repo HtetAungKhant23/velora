@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/HtetAungKhant23/velora/internal/adapters/handler"
+	"github.com/HtetAungKhant23/velora/internal/adapters/handler/middleware"
 	"github.com/HtetAungKhant23/velora/internal/adapters/repository"
 	"github.com/HtetAungKhant23/velora/internal/adapters/token"
 	"github.com/HtetAungKhant23/velora/internal/config"
@@ -23,6 +24,7 @@ func main() {
 	log.Printf("postgres connected: %s", cfg.DatabaseURL)
 
 	tokenSvc := token.NewJWTTokenService(cfg.JWTSecret, cfg.JWTExpiry)
+	authGuard := middleware.NewAuthGuard(tokenSvc)
 
 	userRepo := repository.NewUserRepository(db)
 	userSvc := services.NewUserService(userRepo, tokenSvc)
@@ -30,6 +32,7 @@ func main() {
 
 	httpHandler := handler.NewRouter(handler.RouterDeps{
 		AuthHandler: authHandler,
+		AuthGuard:   authGuard,
 	})
 
 	srv := &http.Server{
