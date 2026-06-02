@@ -78,3 +78,16 @@ func (s *UserService) Login(ctx context.Context, cmd ports.LoginCommand) (ports.
 		Token: token,
 	}, nil
 }
+
+func (s *UserService) GetProfile(ctx context.Context, userID string) (ports.UserDTO, error) {
+	user, err := s.users.FindByID(ctx, user.UserID(userID))
+	if err != nil {
+		return ports.UserDTO{}, fmt.Errorf("get profile :%w", err)
+	}
+
+	return ports.UserDTO{
+		ID:        string(user.ID()),
+		Email:     user.Email().String(),
+		CreatedAt: user.CreatedAt(),
+	}, nil
+}
