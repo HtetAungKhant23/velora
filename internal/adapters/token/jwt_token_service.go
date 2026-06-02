@@ -1,9 +1,11 @@
 package token
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
+	"github.com/HtetAungKhant23/velora/internal/core/ports"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -49,4 +51,27 @@ func (s *JWTTokenService) Generate(userID, email string) (string, error) {
 	}
 
 	return signed, nil
+}
+
+func (s *JWTTokenService) Validate(tokenStr string) (ports.Claims, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &jwtClaims{}, func(t *jwt.Token) (any, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+		}
+		return s.secret, nil
+	})
+
+	if err != nil {
+		return ports.Claims{}, fmt.Errorf("jwt validate: %w", err)
+	}
+
+	claims, ok := token.Claims.(*jwtClaims)
+	if !ok || !token.Valid {
+		return ports.Claims{}, errors.New("jwt: invalid token")
+	}
+
+	return ports.Claims{
+		UserID: claims.UserID,
+		Email:  claims.Email,
+	}, nil
 }
