@@ -47,6 +47,20 @@ func (repo *UserRepository) FindByEmail(ctx context.Context, email user.Email) (
 	return u, nil
 }
 
+func (repo *UserRepository) FindByID(ctx context.Context, id user.UserID) (*user.User, error) {
+	query := `SELECT id, email, password_hash, created_at, updated_at FROM users WHERE id = $1`
+
+	u, err := scanUser(repo.db.QueryRowContext(ctx, query, id))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("user %s: %w", id, shared.ErrNotFound)
+		}
+		return nil, fmt.Errorf("find user by ID: %w", err)
+	}
+
+	return u, nil
+}
+
 func (repo *UserRepository) Save(ctx context.Context, user *user.User) error {
 	query := `INSERT INTO users (email, password_hash) VALUES ($1, $2)`
 
