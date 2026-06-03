@@ -31,11 +31,11 @@ func getApiRouter(deps RouterDeps) *chi.Mux {
 	return api
 }
 
-func registerHealthCheckRoute(r *chi.Mux) {
+func registerHealthCheckRoute(r chi.Router) {
 	r.Get("/health", healthCheckHandler)
 }
 
-func registerAuthRoute(r *chi.Mux, h *AuthHandler, authGuard *middleware.AuthGuard) {
+func registerAuthRoute(r chi.Router, h *AuthHandler, authGuard *middleware.AuthGuard) {
 	r.Route("/auth", func(r chi.Router) {
 		r.Post("/register", h.Register)
 		r.Post("/login", h.Login)
