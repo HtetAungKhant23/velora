@@ -1,6 +1,7 @@
 package services
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"strings"
@@ -11,10 +12,14 @@ import (
 	"github.com/HtetAungKhant23/velora/internal/core/ports"
 )
 
-type ImageService struct{}
+type ImageService struct {
+	storage ports.ImageStorage
+}
 
-func NewImageService() *ImageService {
-	return &ImageService{}
+func NewImageService(storage ports.ImageStorage) *ImageService {
+	return &ImageService{
+		storage: storage,
+	}
 }
 
 func (s *ImageService) Upload(ctx context.Context, cmd ports.UploadImageCommand) (ports.ImageDTO, error) {
@@ -28,8 +33,19 @@ func (s *ImageService) Upload(ctx context.Context, cmd ports.UploadImageCommand)
 		return ports.ImageDTO{}, err
 	}
 
+	buf := new(bytes.Buffer)
+	if _, err := buf.ReadFrom(cmd.Reader); err != nil {
+		return ports.ImageDTO{}, fmt.Errorf("upload: read file: %w", err)
+	}
+	data := buf.Bytes()
+
 	storageKey := buildStorageKey(cmd.OwnerID, cmd.Filename)
-	storagePath, err := imageDom.NewStoragePath(storageKey)
+	stored, err := s.storage.Store(ctx, data, storageKey, format.MimeType())
+	if err != nil {
+		return ports.ImageDTO{}, fmt.Errorf("upload: store: %w", err)
+	}
+
+	storagePath, err := imageDom.NewStoragePath(stored.Path)
 	if err != nil {
 		return ports.ImageDTO{}, fmt.Errorf("upload: storage path: %w", err)
 	}
