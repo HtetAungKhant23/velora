@@ -6,8 +6,9 @@ import (
 )
 
 type RouterDeps struct {
-	AuthHandler *AuthHandler
-	AuthGuard   *middleware.AuthGuard
+	AuthGuard    *middleware.AuthGuard
+	AuthHandler  *AuthHandler
+	ImageHandler *ImageHandler
 }
 
 func NewRouter(deps RouterDeps) *chi.Mux {
@@ -25,6 +26,7 @@ func getApiRouter(deps RouterDeps) *chi.Mux {
 
 	registerHealthCheckRoute(v1)
 	registerAuthRoute(v1, deps.AuthHandler, deps.AuthGuard)
+	registerImageRoute(v1, deps.ImageHandler, deps.AuthGuard)
 
 	api.Mount("/v1", v1)
 
@@ -45,5 +47,13 @@ func registerAuthRoute(r chi.Router, h *AuthHandler, authGuard *middleware.AuthG
 
 			r.Get("/me", h.Me)
 		})
+	})
+}
+
+func registerImageRoute(r chi.Router, h *ImageHandler, authGuard *middleware.AuthGuard) {
+	r.Route("/images", func(r chi.Router) {
+		r.Use(authGuard.Verify)
+
+		r.Post("/upload", h.Upload)
 	})
 }

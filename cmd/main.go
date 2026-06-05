@@ -1,8 +1,9 @@
 package main
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/HtetAungKhant23/velora/internal/adapters/handler"
@@ -18,21 +19,30 @@ func main() {
 
 	db, err := repository.OpenDB(cfg.DatabaseURL)
 	if err != nil {
-		log.Fatalf("failed to connect postgres: %v and dsn: %s", err, cfg.DatabaseURL)
+		slog.Error("failed to connect postgres:", "err", err, "dsn", cfg.DatabaseURL)
+		os.Exit(1)
 	}
 	defer db.Close()
-	log.Printf("postgres connected: %s", cfg.DatabaseURL)
+	slog.Info("postgres connected:", "dsn", cfg.DatabaseURL)
+
+	// impl secondary adapters (outbound ports)
+	userRepo := repository.NewUserRepository(db)
 
 	tokenSvc := token.NewJWTTokenService(cfg.JWTSecret, cfg.JWTExpiry)
 	authGuard := middleware.NewAuthGuard(tokenSvc)
 
-	userRepo := repository.NewUserRepository(db)
+	// impl application service (inbound ports)
 	userSvc := services.NewUserService(userRepo, tokenSvc)
+	imageSvc := services.NewImageService()
+
+	// impl primary adapters (http handlers)
 	authHandler := handler.NewAuthHandler(userSvc)
+	imageHandler := handler.NewImageHandler(imageSvc)
 
 	httpHandler := handler.NewRouter(handler.RouterDeps{
-		AuthHandler: authHandler,
-		AuthGuard:   authGuard,
+		AuthGuard:    authGuard,
+		AuthHandler:  authHandler,
+		ImageHandler: imageHandler,
 	})
 
 	srv := &http.Server{
@@ -43,8 +53,9 @@ func main() {
 		IdleTimeout:  120 * time.Second,
 	}
 
-	log.Printf("Velora: image processing server listening on %s", cfg.Port)
+	slog.Info("Velora: image processing server listening on:", "port", cfg.Port)
 	if err := srv.ListenAndServe(); err != nil {
-		log.Fatalf("server error: %v", err)
+		slog.Error("server error:", "err", err)
+		os.Exit(1)
 	}
 }
