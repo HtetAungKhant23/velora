@@ -61,7 +61,7 @@ func (s *ImageService) Upload(ctx context.Context, cmd ports.UploadImageCommand)
 		return ports.ImageDTO{}, fmt.Errorf("upload: image: %w", err)
 	}
 
-	return toImageDTO(img), nil
+	return toImageDTO(img, stored.URL), nil
 }
 
 func (s *ImageService) resolveFormat(filename, contentType string) (imageDom.Format, error) {
@@ -88,7 +88,7 @@ func (s *ImageService) resolveFormat(filename, contentType string) (imageDom.For
 	return imageDom.Format{}, err
 }
 
-func toImageDTO(img *imageDom.Image) ports.ImageDTO {
+func toImageDTO(img *imageDom.Image, url string) ports.ImageDTO {
 	return ports.ImageDTO{
 		ID:            string(img.ID()),
 		OwnerID:       string(img.OwnerID()),
@@ -101,6 +101,7 @@ func toImageDTO(img *imageDom.Image) ports.ImageDTO {
 		IsPublic:      img.IsPublic(),
 		CreatedAt:     img.CreatedAt(),
 		UpdatedAt:     img.UpdatedAt(),
+		URL:           url,
 	}
 }
 
