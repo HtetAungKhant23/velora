@@ -9,20 +9,24 @@ import (
 )
 
 type Config struct {
-	Port        string
-	DatabaseURL string
-	JWTSecret   string
-	JWTExpiry   time.Duration
+	Port           string
+	DatabaseURL    string
+	JWTSecret      string
+	JWTExpiry      time.Duration
+	StorageBaseDir string
+	StorageBaseURL string
 }
 
 func Load() Config {
 	_ = godotenv.Load()
 
 	return Config{
-		Port:        getEnv("PORT", "3003"),
-		DatabaseURL: getEnv("DATABASE_URL", ""),
-		JWTSecret:   getEnv("JWT_SECRET", ""),
-		JWTExpiry:   getDurationEnv("JWT_EXPIRY_HOURS", 24) * time.Hour,
+		Port:           getEnv("PORT", "3003"),
+		DatabaseURL:    getEnv("DATABASE_URL", ""),
+		JWTSecret:      getEnv("JWT_SECRET", ""),
+		JWTExpiry:      getDurationEnv("JWT_EXPIRY_HOURS", 24) * time.Hour,
+		StorageBaseDir: getEnv("STORAGE_BASE_DIR", ""),
+		StorageBaseURL: getEnv("STORAGE_BASE_URL", ""),
 	}
 }
 
