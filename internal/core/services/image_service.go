@@ -13,12 +13,14 @@ import (
 )
 
 type ImageService struct {
+	repo      ports.ImageRepository
 	storage   ports.ImageStorage
 	processor ports.ImageProcessor
 }
 
-func NewImageService(storage ports.ImageStorage, processor ports.ImageProcessor) *ImageService {
+func NewImageService(repo ports.ImageRepository, storage ports.ImageStorage, processor ports.ImageProcessor) *ImageService {
 	return &ImageService{
+		repo:      repo,
 		storage:   storage,
 		processor: processor,
 	}
@@ -78,6 +80,11 @@ func (s *ImageService) Upload(ctx context.Context, cmd ports.UploadImageCommand)
 	}
 
 	// to save in db here
+
+	err = s.repo.Save(ctx, img)
+	if err != nil {
+		return ports.ImageDTO{}, err
+	}
 
 	return toImageDTO(img, stored.URL), nil
 }

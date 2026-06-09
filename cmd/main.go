@@ -29,6 +29,7 @@ func main() {
 
 	// impl secondary adapters (outbound ports)
 	userRepo := repository.NewUserRepository(db)
+	imageRepo := repository.NewImageRepository(db)
 
 	imageProcessor := processor.NewImageProcessor()
 	imageStorage, err := storage.NewLocalStorage(cfg.StorageBaseDir, cfg.StorageBaseURL)
@@ -43,7 +44,7 @@ func main() {
 
 	// impl application service (inbound ports)
 	userSvc := services.NewUserService(userRepo, tokenSvc)
-	imageSvc := services.NewImageService(imageStorage, imageProcessor)
+	imageSvc := services.NewImageService(imageRepo, imageStorage, imageProcessor)
 
 	// impl primary adapters (http handlers)
 	authHandler := handler.NewAuthHandler(userSvc)
