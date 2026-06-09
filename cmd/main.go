@@ -8,6 +8,7 @@ import (
 
 	"github.com/HtetAungKhant23/velora/internal/adapters/handler"
 	"github.com/HtetAungKhant23/velora/internal/adapters/handler/middleware"
+	"github.com/HtetAungKhant23/velora/internal/adapters/processor"
 	"github.com/HtetAungKhant23/velora/internal/adapters/repository"
 	"github.com/HtetAungKhant23/velora/internal/adapters/storage"
 	"github.com/HtetAungKhant23/velora/internal/adapters/token"
@@ -29,6 +30,7 @@ func main() {
 	// impl secondary adapters (outbound ports)
 	userRepo := repository.NewUserRepository(db)
 
+	imageProcessor := processor.NewImageProcessor()
 	imageStorage, err := storage.NewLocalStorage(cfg.StorageBaseDir, cfg.StorageBaseURL)
 	if err != nil {
 		slog.Error("failed to init image storage:", "err", err)
@@ -41,7 +43,7 @@ func main() {
 
 	// impl application service (inbound ports)
 	userSvc := services.NewUserService(userRepo, tokenSvc)
-	imageSvc := services.NewImageService(imageStorage)
+	imageSvc := services.NewImageService(imageStorage, imageProcessor)
 
 	// impl primary adapters (http handlers)
 	authHandler := handler.NewAuthHandler(userSvc)

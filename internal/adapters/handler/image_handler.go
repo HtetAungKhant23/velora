@@ -62,6 +62,9 @@ func (h *ImageHandler) Upload(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, imageDom.ErrFileSizeZero):
 			middleware.WriteError(w, http.StatusBadRequest, err.Error())
 			return
+		case errors.Is(err, imageDom.ErrImageStillUploading):
+			middleware.WriteError(w, http.StatusBadRequest, err.Error())
+			return
 		default:
 			middleware.MapDomainError(w, err)
 			return
