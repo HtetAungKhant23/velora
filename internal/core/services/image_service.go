@@ -13,12 +13,14 @@ import (
 )
 
 type ImageService struct {
-	storage ports.ImageStorage
+	storage   ports.ImageStorage
+	processor ports.ImageProcessor
 }
 
-func NewImageService(storage ports.ImageStorage) *ImageService {
+func NewImageService(storage ports.ImageStorage, processor ports.ImageProcessor) *ImageService {
 	return &ImageService{
-		storage: storage,
+		storage:   storage,
+		processor: processor,
 	}
 }
 
@@ -60,6 +62,22 @@ func (s *ImageService) Upload(ctx context.Context, cmd ports.UploadImageCommand)
 	if err != nil {
 		return ports.ImageDTO{}, fmt.Errorf("upload: image: %w", err)
 	}
+
+	width, height, err := s.processor.DecodeMetadata(ctx, data)
+	if err != nil {
+		return ports.ImageDTO{}, fmt.Errorf("upload: decode metada: %w", err)
+	}
+
+	dims, err := imageDom.NewDimensions(width, height)
+	if err != nil {
+		return ports.ImageDTO{}, err
+	}
+
+	if err = img.MarkReady(dims); err != nil {
+		return ports.ImageDTO{}, err
+	}
+
+	// to save in db here
 
 	return toImageDTO(img, stored.URL), nil
 }

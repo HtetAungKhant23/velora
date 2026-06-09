@@ -119,3 +119,15 @@ func (img *Image) CreatedAt() time.Time {
 func (img *Image) UpdatedAt() time.Time {
 	return img.updatedAt
 }
+
+func (img *Image) MarkReady(dims Dimensions) error {
+	if img.status != StatusUploading {
+		return ErrImageStillUploading
+	}
+
+	img.dimensions = dims
+	img.status = StatusReady
+	img.updatedAt = time.Now().UTC()
+
+	return nil
+}
