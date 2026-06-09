@@ -2,6 +2,7 @@ package image
 
 import (
 	"errors"
+	"path/filepath"
 	"strings"
 )
 
@@ -41,4 +42,26 @@ func (f Format) String() string {
 
 func (f Format) Equals(format Format) bool {
 	return f.value == format.value
+}
+
+func FormatFromFilename(filename string) (Format, error) {
+	ext := strings.TrimPrefix(filepath.Ext(filename), ".")
+	return NewFormat(ext)
+}
+
+func (f Format) MimeType() string {
+	switch f.value {
+	case "jpeg":
+		return "image/jpeg"
+	case "jpg":
+		return "image/jpg"
+	case "png":
+		return "image/png"
+	case "gif":
+		return "image/gif"
+	case "webp":
+		return "image/webp"
+	default:
+		return "application/octect-stream"
+	}
 }
