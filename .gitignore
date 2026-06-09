@@ -1,4 +1,4 @@
 .env
 /bin
-/data
+/storage
 .DS_store

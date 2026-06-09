@@ -54,6 +54,7 @@ func main() {
 		AuthGuard:    authGuard,
 		AuthHandler:  authHandler,
 		ImageHandler: imageHandler,
+		StaticDir:    cfg.StorageBaseDir,
 	})
 
 	srv := &http.Server{

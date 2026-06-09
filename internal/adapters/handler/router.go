@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/HtetAungKhant23/velora/internal/adapters/handler/middleware"
 	"github.com/go-chi/chi"
 )
@@ -9,10 +11,13 @@ type RouterDeps struct {
 	AuthGuard    *middleware.AuthGuard
 	AuthHandler  *AuthHandler
 	ImageHandler *ImageHandler
+	StaticDir    string
 }
 
 func NewRouter(deps RouterDeps) *chi.Mux {
 	r := chi.NewRouter()
+
+	registerStaticRoute(r, deps.StaticDir)
 
 	r.Mount("/api", getApiRouter(deps))
 
@@ -56,4 +61,13 @@ func registerImageRoute(r chi.Router, h *ImageHandler, authGuard *middleware.Aut
 
 		r.Post("/upload", h.Upload)
 	})
+}
+
+func registerStaticRoute(r chi.Router, baseDir string) {
+	if baseDir == "" {
+		return
+	}
+
+	fileSvcHandler := http.FileServer(http.Dir(baseDir))
+	r.Get("/file/*", http.StripPrefix("/file/", fileSvcHandler).ServeHTTP)
 }
