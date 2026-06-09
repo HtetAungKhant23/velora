@@ -2,6 +2,7 @@ package image
 
 import (
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/HtetAungKhant23/velora/internal/core/domain/user"
@@ -118,6 +119,10 @@ func (img *Image) CreatedAt() time.Time {
 
 func (img *Image) UpdatedAt() time.Time {
 	return img.updatedAt
+}
+
+func (img *Image) AssignID(id int64) {
+	img.id = ImageID(strconv.FormatInt(id, 10))
 }
 
 func (img *Image) MarkReady(dims Dimensions) error {
